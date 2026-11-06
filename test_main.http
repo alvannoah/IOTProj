@@ -1,11 +1,58 @@
-# Test your FastAPI endpoints
+# --- What the Arduino calls ---
 
-GET http://127.0.0.1:8000/
-Accept: application/json
+GET http://127.0.0.1:8000/api/device/electricity?voltage=230.1&current=1.5&power=340&energy=12.345&frequency=50&power_factor=0.95
+
+###
+
+GET http://127.0.0.1:8000/api/device/water?flow_rate=4.5&total_volume=120.5
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
-Accept: application/json
+GET http://127.0.0.1:8000/api/valve
 
 ###
+
+# --- What the frontend calls ---
+
+GET http://127.0.0.1:8000/api/status
+
+###
+
+GET http://127.0.0.1:8000/api/summary
+
+###
+
+GET http://127.0.0.1:8000/api/electricity/history?interval=hour
+
+###
+
+GET http://127.0.0.1:8000/api/water/history?interval=day&start=2026-11-01T00:00:00Z&end=2026-11-08T00:00:00Z
+
+###
+
+POST http://127.0.0.1:8000/api/valve
+Content-Type: application/json
+
+{"open": true}
+
+###
+
+GET http://127.0.0.1:8000/api/valve/history
+
+###
+
+GET http://127.0.0.1:8000/api/tariffs
+
+###
+
+PUT http://127.0.0.1:8000/api/tariffs/electricity
+Content-Type: application/json
+
+{"price_per_unit": 0.20}
+
+###
+
+PUT http://127.0.0.1:8000/api/tariffs/water
+Content-Type: application/json
+
+{"price_per_unit": 1.50}

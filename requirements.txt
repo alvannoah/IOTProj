@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+SQLAlchemy>=2.0
+PyMySQL
+cryptography
+pydantic-settings
+
+# Tests
+pytest
+httpx

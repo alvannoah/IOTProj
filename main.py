@@ -1,24 +1,27 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from fastapi.responses import PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from config.database import init_db
+from config.settings import settings
+from routers import dashboard, device
 
-state = {"last_reading": None, "valve_open": False}
 
-@app.get("/api/reading", response_class=PlainTextResponse)
-def post_reading(value: float):
-    state["last_reading"] = value
-    return "OK"
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
 
-@app.get("/api/valve", response_class=PlainTextResponse)
-def get_valve():
-    return "1" if state["valve_open"] else "0"
 
-@app.get("/api/valve/set", response_class=PlainTextResponse)
-def set_valve(open: bool):
-    state["valve_open"] = open
-    return "OK"
+app = FastAPI(title="IOT Electricity & Water Backend", lifespan=lifespan)
 
-@app.get("/api/status")
-def status():
-    return state
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origin_list,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(device.router)
+app.include_router(dashboard.router)
