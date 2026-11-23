@@ -54,6 +54,17 @@ class ValveCommand(BaseModel):
     open: bool
 
 
+class LedCommand(BaseModel):
+    on: bool
+
+
+class LedEventOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    is_on: bool
+    changed_at: datetime
+
+
 class ValveEventOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -95,6 +106,7 @@ class SensorStatus(BaseModel):
 
 class StatusOut(BaseModel):
     valve_open: bool
+    led_on: bool
     electricity: SensorStatus
     water: SensorStatus
     latest_electricity: ElectricityReadingOut | None

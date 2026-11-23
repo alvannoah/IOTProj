@@ -216,3 +216,46 @@ def test_tariffs_start_unset_then_show_the_latest_price(client):
     assert updated["unit"] == "m3"
     water = next(t for t in client.get("/api/tariffs").json() if t["resource"] == "water")
     assert water["price_per_unit"] == 4.0
+
+
+def test_led_strip_defaults_off_and_uses_plain_text_for_the_arduino(client):
+    assert client.get("/api/led").text == "0"
+    assert client.get("/api/status").json()["led_on"] is False
+
+    assert client.post("/api/led", json={"on": True}).json()["is_on"] is True
+    assert client.get("/api/led").text == "1"
+    assert client.get("/api/status").json()["led_on"] is True
+
+    client.post("/api/led", json={"on": False})
+    assert client.get("/api/led").text == "0"
+    assert [e["is_on"] for e in client.get("/api/led/history").json()] == [False, True]
+
+
+def test_led_and_valve_are_independent(client):
+    client.post("/api/led", json={"on": True})
+    assert client.get("/api/valve").text == "0"
+    client.post("/api/valve", json={"open": True})
+    client.post("/api/led", json={"on": False})
+    assert client.get("/api/valve").text == "1"
+
+
+def test_replies_fit_the_firmware_body_buffer(client):
+    # The firmware keeps at most 7 bytes of a reply body (http_reply.h MAX_BODY).
+    params = {**ELECTRICITY}
+    replies = [
+        client.get("/api/device/electricity", params=params).text,
+        client.get("/api/device/water", params={"flow_rate": 0, "total_volume": 0}).text,
+        client.get("/api/valve").text,
+        client.get("/api/led").text,
+    ]
+    assert all(len(reply.encode()) <= 7 for reply in replies)
+
+
+def test_firmware_request_format_is_accepted(client):
+    # Exactly what main.cpp builds with dtostrf: fixed decimals, no exponent.
+    path = (
+        "/api/device/electricity?voltage=229.4&current=0.312&power=61.2&energy=0.157"
+        "&frequency=50.0&power_factor=0.86"
+    )
+    assert client.get(path).text == "OK"
+    assert client.get("/api/device/water?flow_rate=0.00&total_volume=0.000").text == "OK"

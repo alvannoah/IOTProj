@@ -11,6 +11,8 @@ from schemas import (
     ElectricityBucket,
     ElectricityReadingOut,
     Interval,
+    LedCommand,
+    LedEventOut,
     Resource,
     StatusOut,
     SummaryOut,
@@ -24,6 +26,7 @@ from schemas import (
 from services.aggregation import INTERVAL_SECONDS, as_utc
 from services.BillingService import UNITS, BillingService
 from services.ElectricityService import ElectricityTelemetryService
+from services.LedService import LedService
 from services.WaterService import WaterTelemetryService
 
 router = APIRouter(prefix="/api", tags=["dashboard"])
@@ -63,6 +66,7 @@ def status(db: Session = Depends(get_db)):
     water = water_service.read_water()
     return {
         "valve_open": water_service.read_valve(),
+        "led_on": LedService(db).read(),
         "electricity": sensor_status(electricity.recorded_at if electricity else None),
         "water": sensor_status(water.recorded_at if water else None),
         "latest_electricity": electricity,
@@ -116,6 +120,16 @@ def set_valve(command: ValveCommand, db: Session = Depends(get_db)):
 @router.get("/valve/history", response_model=list[ValveEventOut])
 def valve_history(limit: int = Query(50, ge=1, le=1000), db: Session = Depends(get_db)):
     return WaterTelemetryService(db).valve_history(limit)
+
+
+@router.post("/led", response_model=LedEventOut)
+def set_led(command: LedCommand, db: Session = Depends(get_db)):
+    return LedService(db).write(command.on)
+
+
+@router.get("/led/history", response_model=list[LedEventOut])
+def led_history(limit: int = Query(50, ge=1, le=1000), db: Session = Depends(get_db)):
+    return LedService(db).history(limit)
 
 
 @router.get("/summary", response_model=SummaryOut)

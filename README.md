@@ -38,11 +38,17 @@ All are GET requests with plain-text replies. A reply of `OK` means the reading 
 | --- | --- |
 | `/api/device/electricity?voltage=&current=&power=&energy=&frequency=&power_factor=` | Send a PZEM reading |
 | `/api/device/water?flow_rate=&total_volume=` | Send a flow meter reading |
-| `/api/valve` | Poll the valve: `1` = open, `0` = closed |
+| `/api/valve` | Poll the water: `1` = on, `0` = off |
+| `/api/led` | Poll the LED strip: `1` = on, `0` = off |
 
 Units: V, A, W, kWh, Hz, L/min, L. `energy` and `total_volume` are running totals, and
 a total going backwards (e.g. after a reboot) is handled as a counter reset. A failed
 PZEM read gives `NaN`, which gets a 422 reply and is not stored.
+
+The firmware (separate repo, `IOT_Group4`) switches the solenoid valve and the pump together
+from the one `/api/valve` setting. For safety it stops the pump on its own after 60 s, or after
+30 s without reaching the backend. After the 60 s stop the water stays off until it is turned off
+and on again, but the backend can't see this and still reports the valve as open.
 
 ## Frontend endpoints
 
@@ -50,13 +56,15 @@ All are JSON. Timestamps are UTC; convert them for display.
 
 | Request | Purpose |
 | --- | --- |
-| `GET /api/status` | Valve state, sensors online/offline, latest readings |
+| `GET /api/status` | Valve and LED state, sensors online/offline, latest readings |
 | `GET /api/summary` | Usage and cost for today and this month, plus projected month |
 | `GET /api/electricity/history` | Graph data: averages, peak, kWh and cost per bucket |
 | `GET /api/water/history` | Graph data: flow, litres and cost per bucket |
 | `GET /api/electricity/latest`, `GET /api/water/latest` | Most recent reading (404 if none) |
 | `POST /api/valve` `{"open": true}` | Open or close the solenoid |
 | `GET /api/valve/history?limit=50` | Past valve changes, newest first |
+| `POST /api/led` `{"on": true}` | Switch the LED strip on or off |
+| `GET /api/led/history?limit=50` | Past LED strip changes, newest first |
 | `GET /api/tariffs` | Current prices |
 | `PUT /api/tariffs/{electricity\|water}` `{"price_per_unit": 0.2}` | Set a price (per kWh / per m3) |
 

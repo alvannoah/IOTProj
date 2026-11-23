@@ -55,12 +55,23 @@ class YFS201Reading(Base):
 
 
 class ValveEvent(Base):
-    """Every solenoid change. The newest row is the current state, so it survives restarts."""
+    """Every water on/off change (the firmware switches the solenoid and pump together).
+    The newest row is the current state, so it survives restarts."""
 
     __tablename__ = "valve_events"
 
     id = Column(Integer, primary_key=True)
     is_open = Column(Boolean, nullable=False)
+    changed_at = Column(UTCDateTime, nullable=False, default=utc_now, index=True)
+
+
+class LedEvent(Base):
+    """Every LED strip change. The newest row is the current state, so it survives restarts."""
+
+    __tablename__ = "led_events"
+
+    id = Column(Integer, primary_key=True)
+    is_on = Column(Boolean, nullable=False)
     changed_at = Column(UTCDateTime, nullable=False, default=utc_now, index=True)
 
 

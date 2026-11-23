@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from services.ElectricityService import ElectricityTelemetryService
+from services.LedService import LedService
 from services.WaterService import WaterTelemetryService
 
 router = APIRouter(prefix="/api", tags=["device"])
@@ -47,3 +48,9 @@ def post_water(
 def get_valve(db: Session = Depends(get_db)):
     """Polled by the Arduino: "1" means open the solenoid, "0" means close it."""
     return "1" if WaterTelemetryService(db).read_valve() else "0"
+
+
+@router.get("/led", response_class=PlainTextResponse)
+def get_led(db: Session = Depends(get_db)):
+    """Polled by the Arduino: "1" means switch the LED strip on, "0" means off."""
+    return "1" if LedService(db).read() else "0"

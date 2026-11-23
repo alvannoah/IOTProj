@@ -12,6 +12,10 @@ GET http://127.0.0.1:8000/api/valve
 
 ###
 
+GET http://127.0.0.1:8000/api/led
+
+###
+
 # --- What the frontend calls ---
 
 GET http://127.0.0.1:8000/api/status
@@ -38,6 +42,17 @@ Content-Type: application/json
 ###
 
 GET http://127.0.0.1:8000/api/valve/history
+
+###
+
+POST http://127.0.0.1:8000/api/led
+Content-Type: application/json
+
+{"on": true}
+
+###
+
+GET http://127.0.0.1:8000/api/led/history
 
 ###
 
